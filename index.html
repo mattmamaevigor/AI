@@ -11,9 +11,10 @@
         .header { text-align: center; padding: 20px 0; grid-column: 1 / -1; }
         .logo { font-size: 2rem; font-weight: bold; color: #58a6ff; margin-bottom: 10px; }
         .sidebar { background: #161b22; padding: 20px; border-radius: 10px; }
-        .model-btn { width: 100%; padding: 10px; margin: 5px 0; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 5px; cursor: pointer; }
+        .model-btn { width: 100%; padding: 10px; margin: 5px 0; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 5px; cursor: pointer; text-align: left; }
         .model-btn.active { background: #58a6ff; border-color: #58a6ff; }
         .model-btn:hover { border-color: #58a6ff; }
+        .model-info { font-size: 12px; color: #8b949e; margin-top: 3px; }
         .chat-container { background: #161b22; border-radius: 10px; display: flex; flex-direction: column; height: 70vh; }
         .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .message { max-width: 80%; padding: 10px; border-radius: 10px; }
@@ -43,16 +44,33 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">AI Coder</div>
-            <div>Бесплатные AI-модели</div>
+            <div class="logo">🤖 Умный AI Ассистент</div>
+            <div>Самые интеллектуальные бесплатные модели</div>
         </div>
 
         <aside class="sidebar">
             <div class="model-selector">
-                <button class="model-btn active" data-model="mistralai/mistral-7b-instruct:free">Mistral 7B</button>
-                <button class="model-btn" data-model="google/gemma-7b-it:free">Gemma 7B</button>
-                <button class="model-btn" data-model="huggingfaceh4/zephyr-7b-beta:free">Zephyr 7B</button>
-                <button class="model-btn" data-model="openchat/openchat-7b:free">OpenChat 7B</button>
+                <!-- САМЫЕ УМНЫЕ БЕСПЛАТНЫЕ МОДЕЛИ -->
+                <button class="model-btn active" data-model="anthropic/claude-3-haiku">
+                    🧠 Claude 3 Haiku (Anthropic)
+                    <div class="model-info">Самый умный из бесплатных</div>
+                </button>
+                <button class="model-btn" data-model="google/gemini-pro-1.5">
+                    💎 Gemini Pro 1.5 (Google)
+                    <div class="model-info">Мощная модель от Google</div>
+                </button>
+                <button class="model-btn" data-model="mistralai/mixtral-8x7b-instruct">
+                    🌪️ Mixtral 8x7B (Mistral)
+                    <div class="model-info">Экспертная модель 70B параметров</div>
+                </button>
+                <button class="model-btn" data-model="meta-llama/llama-3-70b-instruct">
+                    🦙 Llama 3 70B (Meta)
+                    <div class="model-info">Новейшая модель от Meta</div>
+                </button>
+                <button class="model-btn" data-model="cohere/command-r-plus">
+                    🔥 Command R+ (Cohere)
+                    <div class="model-info">Отличная для диалогов</div>
+                </button>
             </div>
 
             <div class="status">
@@ -65,11 +83,18 @@
 
         <main class="chat-container">
             <div class="chat-messages" id="chat-messages">
-                <div class="message assistant">Привет! Выбери модель и напиши сообщение</div>
+                <div class="message assistant">
+                    <strong>🧠 Привет! Я использую самые умные бесплатные модели:</strong><br><br>
+                    • <strong>Claude 3 Haiku</strong> - самый интеллектуальный бесплатный AI<br>
+                    • <strong>Gemini Pro 1.5</strong> - мощная модель от Google<br>
+                    • <strong>Mixtral 8x7B</strong> - экспертная модель на 70B параметров<br>
+                    • <strong>Llama 3 70B</strong> - новейшая разработка от Meta<br><br>
+                    Выбери модель и задавай вопросы!
+                </div>
             </div>
 
             <div class="chat-input">
-                <textarea class="message-input" id="message-input" placeholder="Введите сообщение..." rows="1"></textarea>
+                <textarea class="message-input" id="message-input" placeholder="Задайте вопрос..." rows="1"></textarea>
                 <button class="send-btn" id="send-btn">Отправить</button>
             </div>
         </main>
@@ -84,7 +109,7 @@
         const clearChatBtn = document.getElementById('clear-chat');
         const statusDot = document.querySelector('.status-dot');
 
-        let currentModel = 'mistralai/mistral-7b-instruct:free';
+        let currentModel = 'anthropic/claude-3-haiku';
         let conversationHistory = [];
         const API_KEY = "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";
 
@@ -97,11 +122,13 @@
                     modelButtons.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     currentModel = this.dataset.model;
+                    const modelName = this.childNodes[0].textContent.trim();
+                    statusText.textContent = `Модель: ${modelName}`;
                 });
             });
 
             clearChatBtn.addEventListener('click', () => {
-                chatMessages.innerHTML = '<div class="message assistant">История очищена</div>';
+                chatMessages.innerHTML = '<div class="message assistant">История очищена. Выберите модель и задавайте вопросы!</div>';
                 conversationHistory = [];
             });
         }
@@ -125,23 +152,29 @@
 
             try {
                 statusDot.className = 'status-dot loading';
-                statusText.textContent = 'Отправка...';
+                statusText.textContent = 'Отправка запроса...';
                 
                 const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${API_KEY}`
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'Умный AI Ассистент'
                     },
                     body: JSON.stringify({
                         model: currentModel,
                         messages: conversationHistory,
                         temperature: 0.7,
-                        max_tokens: 1000
+                        max_tokens: 2000
                     })
                 });
 
-                if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`Ошибка API: ${response.status} - ${errorData.error?.message || 'Попробуйте другую модель'}`);
+                }
+
                 const data = await response.json();
                 const assistantMessage = data.choices[0].message.content;
 
@@ -154,9 +187,10 @@
 
             } catch (error) {
                 chatMessages.removeChild(loadingDiv);
-                addMessage('assistant', `Ошибка: ${error.message}`);
+                addMessage('assistant', `❌ ${error.message}`);
                 statusDot.className = 'status-dot disconnected';
-                statusText.textContent = 'Ошибка';
+                statusText.textContent = 'Ошибка соединения';
+                console.error('API Error:', error);
             }
         }
 
@@ -170,6 +204,8 @@
 
         messageInput.addEventListener('input', function() {
             sendBtn.disabled = !this.value.trim();
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
 
         messageInput.addEventListener('keydown', (e) => {
